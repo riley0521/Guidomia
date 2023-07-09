@@ -1,4 +1,4 @@
-package com.example.guidomia.ui.theme
+package com.example.guidomia.presentation.ui.theme
 
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Typography
