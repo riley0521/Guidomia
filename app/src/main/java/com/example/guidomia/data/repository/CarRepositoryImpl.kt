@@ -2,6 +2,10 @@ package com.example.guidomia.data.repository
 
 import android.content.Context
 import com.example.guidomia.R
+import com.example.guidomia.data.local.CarDao
+import com.example.guidomia.data.local.entity.CarEntity
+import com.example.guidomia.data.mapper.toCar
+import com.example.guidomia.data.mapper.toCarEntity
 import com.example.guidomia.domain.model.Car
 import com.example.guidomia.domain.repository.CarRepository
 import kotlinx.coroutines.CoroutineDispatcher
@@ -17,10 +21,21 @@ import java.io.InputStream
  */
 class CarRepositoryImpl(
     private val context: Context,
+    private val carDao: CarDao,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : CarRepository {
 
-    override suspend fun getAll(): List<Car> {
+    override suspend fun setup() {
+        if (carDao.getRowCount() > 0) {
+            return
+        }
+
+        val carList: List<CarEntity> = getCarListFromJsonFile().map { it.toCarEntity() }
+
+        carDao.insertMultiple(carList)
+    }
+
+    private suspend fun getCarListFromJsonFile(): List<Car> {
         return withContext(dispatcher) {
             try {
                 val carListInputStream: InputStream = context.assets.open("car_list.json")
@@ -49,5 +64,9 @@ class CarRepositoryImpl(
                 emptyList()
             }
         }
+    }
+
+    override suspend fun getAll(): List<Car> {
+        return carDao.getAll().map { it.toCar() }
     }
 }
