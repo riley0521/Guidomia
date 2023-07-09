@@ -2,6 +2,7 @@ package com.example.guidomia.presentation
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,9 +30,15 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -43,12 +50,18 @@ import androidx.compose.ui.unit.dp
 import com.example.guidomia.R
 import com.example.guidomia.domain.model.Car
 import com.example.guidomia.presentation.ui.theme.GuidomiaTheme
+import com.example.guidomia.presentation.ui.theme.Orange
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun HomeScreen(
     state: HomeState
 ) {
+
+    var selectedIndex: Int by remember {
+        mutableStateOf(0)
+    }
+
     Surface(color = MaterialTheme.colors.background) {
         Scaffold(
             topBar = {
@@ -161,9 +174,11 @@ fun HomeScreen(
                 itemsIndexed(state.carList) { index, car ->
                     CarItem(
                         car = car,
+                        onExpand = { selectedIndex = index },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
+                            .padding(horizontal = 16.dp),
+                        isExpanded = index == selectedIndex
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -184,7 +199,9 @@ fun HomeScreen(
 @Composable
 fun CarItem(
     car: Car,
-    modifier: Modifier = Modifier
+    onExpand: () -> Unit,
+    modifier: Modifier = Modifier,
+    isExpanded: Boolean = false
 ) {
 
     val customerPriceStr: String = if (car.customerPrice > 1000) {
@@ -248,6 +265,68 @@ fun CarItem(
                                 contentDescription = "Star icon.",
                                 tint = MaterialTheme.colors.primary
                             )
+                        }
+                    }
+                }
+
+                IconButton(onClick = onExpand) {
+                    Icon(
+                        imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp
+                        else Icons.Default.KeyboardArrowDown,
+                        contentDescription = "Expand icon."
+                    )
+                }
+            }
+
+            if (isExpanded) {
+                Column(
+                    modifier = Modifier.padding(start = 16.dp)
+                ) {
+                    Text(
+                        text = "Pros:",
+                        style = MaterialTheme.typography.subtitle2,
+                        modifier = Modifier.alpha(0.45f)
+                    )
+
+                    car.prosList.forEach {
+                        if (it.isNotBlank()) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Canvas(modifier = Modifier.size(8.dp)) {
+                                    drawCircle(Orange)
+                                }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(text = it)
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "Cons:",
+                        style = MaterialTheme.typography.subtitle2,
+                        modifier = Modifier.alpha(0.45f)
+                    )
+
+                    car.consList.forEach {
+                        if (it.isNotBlank()) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Canvas(modifier = Modifier.size(8.dp)) {
+                                    drawCircle(Orange)
+                                }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(text = it)
+                            }
                         }
                     }
                 }
