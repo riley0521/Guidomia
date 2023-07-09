@@ -26,6 +26,12 @@ class HomeViewModel(
     val state: StateFlow<HomeState> = _state.asStateFlow()
 
     /**
+     * Here we also need to define a private _allCarList to store all the cars available
+     * because we will override the carList in _state when we are querying by make or by model.
+     */
+    private val _allCarList: MutableStateFlow<List<Car>> = MutableStateFlow(emptyList())
+
+    /**
      * Call the fetchCarList() immediately when you create this HomeViewModel class.
      */
     init {
@@ -36,10 +42,52 @@ class HomeViewModel(
         viewModelScope.launch {
             val carList: List<Car> = carRepository.getAll()
 
+            _allCarList.update { carList }
+
             _state.update {
                 it.copy(
                     carList = carList
                 )
+            }
+        }
+    }
+
+    /**
+     * This is an MVI architecture approach.
+     * This onEvent() centralizes all event that the UI can do that should affect the _state field,
+     * submitting forms, or anything that has relations with business logic that the UI should know nothing about.
+     */
+    fun onEvent(event: HomeEvent) {
+        when (event) {
+            is HomeEvent.OnMakeFilterQueryChanged -> {
+                _state.update { it.copy(makeFilterQuery = event.value) }
+
+                if (event.value.isNotBlank()) {
+                    _state.update {
+                        it.copy(
+                            carList = _allCarList.value.filter { car ->
+                                car.make.contains(event.value, true)
+                            }
+                        )
+                    }
+                } else {
+                    _state.update { it.copy(carList = _allCarList.value) }
+                }
+            }
+            is HomeEvent.OnModelFilterQueryChanged -> {
+                _state.update { it.copy(modelFilterQuery = event.value) }
+
+                if (event.value.isNotBlank()) {
+                    _state.update {
+                        it.copy(
+                            carList = _allCarList.value.filter { car ->
+                                car.model.contains(event.value, true)
+                            }
+                        )
+                    }
+                } else {
+                    _state.update { it.copy(carList = _allCarList.value) }
+                }
             }
         }
     }

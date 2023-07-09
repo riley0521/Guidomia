@@ -55,7 +55,8 @@ import com.example.guidomia.presentation.ui.theme.Orange
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun HomeScreen(
-    state: HomeState
+    state: HomeState,
+    onEvent: (HomeEvent) -> Unit
 ) {
 
     var selectedIndex: Int by remember {
@@ -137,8 +138,8 @@ fun HomeScreen(
                                 )
 
                                 OutlinedTextField(
-                                    value = "",
-                                    onValueChange = {},
+                                    value = state.makeFilterQuery,
+                                    onValueChange = { onEvent(HomeEvent.OnMakeFilterQueryChanged(it)) },
                                     maxLines = 1,
                                     placeholder = {
                                         Text(text = "Any Make")
@@ -153,8 +154,8 @@ fun HomeScreen(
                                 )
 
                                 OutlinedTextField(
-                                    value = "",
-                                    onValueChange = {},
+                                    value = state.modelFilterQuery,
+                                    onValueChange = { onEvent(HomeEvent.OnModelFilterQueryChanged(it)) },
                                     maxLines = 1,
                                     placeholder = {
                                         Text(text = "Any Model")
@@ -340,7 +341,8 @@ fun CarItem(
 fun HomeScreenPreview() {
     GuidomiaTheme {
         HomeScreen(
-            state = HomeState()
+            state = HomeState(),
+            onEvent = {}
         )
     }
 }

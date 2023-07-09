@@ -19,7 +19,10 @@ class MainActivity : ComponentActivity() {
                 /**
                  * Since we only have Screen, NavHost for navigation is not necessary. We can directly render the HomeScreen
                  */
-                HomeScreen(state = state)
+                HomeScreen(
+                    state = state,
+                    onEvent = viewModel::onEvent
+                )
             }
         }
     }
